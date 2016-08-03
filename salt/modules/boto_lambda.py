@@ -249,7 +249,7 @@ def create_function(FunctionName, Runtime, Role, Handler, ZipFile=None,
                                    Code=code, Description=Description, Timeout=Timeout, MemorySize=MemorySize,
                                    Publish=Publish, **kwargs)
             except ClientError as e:
-                log.warning('create_function exception: {0}'.format(e)
+                log.warning('create_function exception: {0}'.format(e))
                 if retry > 1 and e.response.get('Error', {}).get('Code') == 'InvalidParameterValueException':
                     log.warning('Function not created but IAM role may not have propagated, will retry')
                     # exponential backoff
@@ -366,7 +366,7 @@ def update_function_config(FunctionName, Role=None, Handler=None,
             try:
                 r = conn.update_function_configuration(**args)
             except ClientError as e:
-                log.warning('update_function exception: {0}'.format(e)
+                log.warning('update_function exception: {0}'.format(e))
                 if retry > 1 and e.response.get('Error', {}).get('Code') == 'InvalidParameterValueException':
                     log.warning('Function not updated but IAM role may not have propagated, will retry')
                     # exponential backoff

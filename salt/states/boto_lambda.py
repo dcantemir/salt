@@ -63,6 +63,7 @@ import os
 import os.path
 import hashlib
 import json
+import time
 
 # Import Salt Libs
 import salt.ext.six as six
@@ -244,8 +245,12 @@ def function_present(name, FunctionName, Runtime, Role, Handler, ZipFile=None, S
     ret['comment'] = os.linesep.join([ret['comment'], 'Function {0} is present.'.format(FunctionName)])
     ret['changes'] = {}
     # function exists, ensure config matches
+    start_t = time.time()
     _ret = _function_config_present(FunctionName, Role, Handler, Description, Timeout,
                                     MemorySize, VpcConfig, region, key, keyid, profile, RoleRetries)
+    end_t  = time.time()
+    log.warning('_function_config_present state for {0} took {1} sec'.format(FunctionName, end_t-start_t))
+
     if not _ret.get('result'):
         ret['result'] = False
         ret['comment'] = _ret['comment']
@@ -253,8 +258,13 @@ def function_present(name, FunctionName, Runtime, Role, Handler, ZipFile=None, S
         return ret
     ret['changes'] = dictupdate.update(ret['changes'], _ret['changes'])
     ret['comment'] = ' '.join([ret['comment'], _ret['comment']])
+
+    start_t = time.time()
     _ret = _function_code_present(FunctionName, ZipFile, S3Bucket, S3Key, S3ObjectVersion,
                                   region, key, keyid, profile)
+    end_t = time.time()
+    log.warning('_function_code_present state for {0} took {1} sec'.format(FunctionName, end_t-start_t))
+
     if not _ret.get('result'):
         ret['result'] = False
         ret['comment'] = _ret['comment']

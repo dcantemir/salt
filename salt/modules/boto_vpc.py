@@ -264,9 +264,16 @@ def _create_resource(resource, name=None, tags=None, region=None, key=None,
                 return {'created': True}
             else:
                 log.info('A {0} with id {1} was created'.format(resource, r.id))
-
-                if not _get_resource(resource, resource_id=r.id,  region=region, key=key,
+    
+                found = False
+                for attempt in range(10):
+                    if _get_resource(resource, resource_id=r.id,  region=region, key=key,
                                      keyid=keyid, profile=profile):
+                        found = True
+                        break
+                    time.sleep(pow(2, attempt))
+                
+                if not found:
                     return {'created': False, 'error': {'message': '{0} with id {1} has been created but cannot be accessed'.format(resource, r.id)}}
 
                 _maybe_set_name_tag(name, r)
@@ -634,8 +641,14 @@ def create(cidr_block, instance_tenancy=None, vpc_name=None,
         if vpc:
             log.info('The newly created VPC id is {0}'.format(vpc.id))
 
-            vpc_id = check_vpc(vpc.id, None, region, key, keyid, profile)
-            if not vpc_id:
+            found = False
+            for attempt in range(10):
+                if check_vpc(vpc.id, None, region, key, keyid, profile):
+                    found = True
+                    break
+                time.sleep(pow(2, attempt))
+
+            if not found:
                 return {'created': False, 'error': {'message': 'VPC {0} has been created but cannot be accessed.'.format(vpc_name or vpc_id)}}
 
             _maybe_set_name_tag(vpc_name, vpc)

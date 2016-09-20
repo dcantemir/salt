@@ -264,6 +264,11 @@ def _create_resource(resource, name=None, tags=None, region=None, key=None,
                 return {'created': True}
             else:
                 log.info('A {0} with id {1} was created'.format(resource, r.id))
+
+                if not _get_resource(resource, resource_id=r.id,  region=region, key=key,
+                                     keyid=keyid, profile=profile):
+                    return {'created': False, 'error': {'message': '{0} with id {1} has been created but cannot be accessed'.format(resource, r.id)}}
+
                 _maybe_set_name_tag(name, r)
                 _maybe_set_tags(tags, r)
 
@@ -625,22 +630,30 @@ def create(cidr_block, instance_tenancy=None, vpc_name=None,
     try:
         conn = _get_conn(region=region, key=key, keyid=keyid, profile=profile)
         vpc = conn.create_vpc(cidr_block, instance_tenancy=instance_tenancy)
+
         if vpc:
             log.info('The newly created VPC id is {0}'.format(vpc.id))
+
+            vpc_id = check_vpc(vpc.id, None, region, key, keyid, profile)
+            if not vpc_id:
+                return {'created': False, 'error': {'message': 'VPC {0} has been created but cannot be accessed.'.format(vpc_name or vpc_id)}}
 
             _maybe_set_name_tag(vpc_name, vpc)
             _maybe_set_tags(tags, vpc)
             _maybe_set_dns(conn, vpc.id, enable_dns_support, enable_dns_hostnames)
             _maybe_name_route_table(conn, vpc.id, vpc_name)
+
             if vpc_name:
                 _cache_id(vpc_name, vpc.id,
                           region=region, key=key,
                           keyid=keyid, profile=profile)
             return {'created': True, 'id': vpc.id}
         else:
+            print 'else condition'
             log.warning('VPC was not created')
             return {'created': False}
     except BotoServerError as e:
+        print 'error happened'
         return {'created': False, 'error': salt.utils.boto.get_error(e)}
 
 

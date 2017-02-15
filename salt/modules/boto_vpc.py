@@ -71,7 +71,7 @@ Connection module for Amazon VPC
 
 :depends: boto
 
-.. versionadded:: 2016.11.0
+.. versionadded:: Carbon
 
 Functions to request, accept, delete and describe VPC peering connections.
 Named VPC peering connections can be requested using these modules.
@@ -264,7 +264,7 @@ def _create_resource(resource, name=None, tags=None, region=None, key=None,
                 return {'created': True}
             else:
                 log.info('A {0} with id {1} was created'.format(resource, r.id))
-    
+
                 found = False
                 for attempt in range(10):
                     if _get_resource(resource, resource_id=r.id,  region=region, key=key,
@@ -272,7 +272,7 @@ def _create_resource(resource, name=None, tags=None, region=None, key=None,
                         found = True
                         break
                     time.sleep(pow(2, attempt))
-                
+
                 if not found:
                     return {'created': False, 'error': {'message': '{0} with id {1} has been created but cannot be accessed'.format(resource, r.id)}}
 
@@ -1285,7 +1285,7 @@ def nat_gateway_exists(nat_gateway_id=None, subnet_id=None, subnet_name=None,
 
     This function requires boto3 to be installed.
 
-    .. versionadded:: 2016.11.0
+    .. versionadded:: Carbon
 
     CLI Example:
 
@@ -1347,7 +1347,7 @@ def create_nat_gateway(subnet_id=None,
     Returns the nat gateway id if the nat gateway was created and
     returns False if the nat gateway was not created.
 
-    .. versionadded:: 2016.11.0
+    .. versionadded:: Carbon
 
     CLI Example:
 
@@ -1398,7 +1398,7 @@ def delete_nat_gateway(nat_gateway_id,
 
     This function requires boto3 to be installed.
 
-    .. versionadded:: 2016.11.0
+    .. versionadded:: Carbon
 
     nat_gateway_id
         Id of the NAT Gateway
@@ -2479,7 +2479,7 @@ def describe_route_table(route_table_id=None, route_table_name=None,
 
     '''
 
-    salt.utils.warn_until('Oxygen',
+    salt.utils.warn_until('Nitrogen',
          'The \'describe_route_table\' method has been deprecated and '
          'replaced by \'describe_route_tables\'.'
     )
@@ -2533,7 +2533,7 @@ def describe_route_tables(route_table_id=None, route_table_name=None,
 
     This function requires boto3 to be installed.
 
-    .. versionadded:: 2016.11.0
+    .. versionadded:: Carbon
 
     CLI Example:
 
@@ -2642,7 +2642,7 @@ def _maybe_set_dns(conn, vpcid, dns_support, dns_hostnames):
 def _maybe_name_route_table(conn, vpcid, vpc_name):
     route_tables = conn.get_all_route_tables(filters={'vpc_id': vpcid})
     if not route_tables:
-        log.warning('no default route table found')
+        log.warn('no default route table found')
         return
     default_table = None
     for table in route_tables:
@@ -2651,7 +2651,7 @@ def _maybe_name_route_table(conn, vpcid, vpc_name):
                 default_table = table
                 break
     if not default_table:
-        log.warning('no default route table found')
+        log.warn('no default route table found')
         return
 
     name = '{0}-default-table'.format(vpc_name)
@@ -2685,7 +2685,7 @@ def _get_subnet_explicit_route_table(subnet_id, vpc_id, conn=None, region=None, 
     '''
     helper function to find subnet explicit route table associations
 
-    .. versionadded:: 2016.11.0
+    .. versionadded:: Carbon
     '''
     if not conn:
         conn = _get_conn(region=region, key=key, keyid=keyid, profile=profile)
@@ -2704,8 +2704,6 @@ def request_vpc_peering_connection(requester_vpc_id=None, requester_vpc_name=Non
                                    key=None, keyid=None, profile=None, dry_run=False):
     '''
     Request a VPC peering connection between two VPCs.
-
-    .. versionadded:: 2016.11.0
 
     requester_vpc_id
         ID of the requesting VPC. Exclusive with requester_vpc_name.
@@ -2744,6 +2742,8 @@ def request_vpc_peering_connection(requester_vpc_id=None, requester_vpc_name=Non
 
     dry_run
         If True, skip application and return status.
+
+    .. versionadded:: Carbon
 
     CLI Example:
 
@@ -2847,12 +2847,9 @@ def describe_vpc_peering_connection(name,
     '''
     Returns any VPC peering connection id(s) for the given VPC
     peering connection name.
-
     VPC peering connection ids are only returned for connections that
-    are in the ``active``, ``pending-acceptance`` or ``provisioning``
-    state.
-
-    .. versionadded:: 2016.11.0
+    are in the
+    ``active``, ``pending-acceptance`` or ``provisioning`` state.
 
     :param name: The string name for this VPC peering connection
     :param region: The aws region to use
@@ -2860,6 +2857,8 @@ def describe_vpc_peering_connection(name,
     :param keyid: The key id associated with this aws account
     :param profile: The profile to use
     :return: dict
+
+    .. versionadded:: Carbon
 
     CLI Example:
 
@@ -2888,8 +2887,6 @@ def accept_vpc_peering_connection(  # pylint: disable=too-many-arguments
     '''
     Request a VPC peering connection between two VPCs.
 
-    .. versionadded:: 2016.11.0
-
     :param conn_id: The ID to use. String type.
     :param name: The name of this VPC peering connection. String type.
     :param region: The AWS region to use. Type string.
@@ -2901,6 +2898,8 @@ def accept_vpc_peering_connection(  # pylint: disable=too-many-arguments
 
     Warning: Please specify either the ``vpc_peering_connection_id`` or
     ``name`` but not both. Specifying both will result in an error!
+
+    .. versionadded:: Carbon
 
     CLI Example:
 
@@ -2966,8 +2965,6 @@ def delete_vpc_peering_connection(conn_id=None, conn_name=None, region=None,
     '''
     Delete a VPC peering connection.
 
-    .. versionadded:: 2016.11.0
-
     conn_id
         The connection ID to check.  Exclusive with conn_name.
 
@@ -2989,6 +2986,8 @@ def delete_vpc_peering_connection(conn_id=None, conn_name=None, region=None,
 
     dry_run
         If True, skip application and simply return projected status.
+
+    .. versionadded:: Carbon
 
     CLI Example:
 
@@ -3027,8 +3026,6 @@ def is_peering_connection_pending(conn_id=None, conn_name=None, region=None,
     '''
     Check if a VPC peering connection is in the pending state.
 
-    .. versionadded:: 2016.11.0
-
     conn_id
         The connection ID to check.  Exclusive with conn_name.
 
@@ -3047,6 +3044,8 @@ def is_peering_connection_pending(conn_id=None, conn_name=None, region=None,
     profile
         A dict with region, key and keyid, or a pillar key (string) that
         contains a dict with region, key and keyid.
+
+    .. versionadded:: Carbon
 
     CLI Example:
 
@@ -3089,8 +3088,6 @@ def peering_connection_pending_from_vpc(conn_id=None, conn_name=None, vpc_id=Non
     '''
     Check if a VPC peering connection is in the pending state, and requested from the given VPC.
 
-    .. versionadded:: 2016.11.0
-
     conn_id
         The connection ID to check.  Exclusive with conn_name.
 
@@ -3115,6 +3112,8 @@ def peering_connection_pending_from_vpc(conn_id=None, conn_name=None, vpc_id=Non
     profile
         A dict with region, key and keyid, or a pillar key (string) that
         contains a dict with region, key and keyid.
+
+    .. versionadded:: Carbon
 
     CLI Example:
 

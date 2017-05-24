@@ -461,10 +461,12 @@ def _global_indexes_present(provisioned_indexes, global_indexes, changes_old,
         provisioned_index_names, set(gsi_config.keys()))
 
     if index_names_to_be_deleted:
-        ret['result'] = False
-        ret['comment'] = ('Deletion of GSIs ({0}) is not supported! Please do this '
-                          'manually in the AWS console.'.format(', '.join(index_names_to_be_deleted)))
-        return ret
+        # Given the length check above, new_index_names should have a single element here.
+        index_name = next(iter(index_names_to_be_deleted))
+        _delete_global_secondary_index(ret, name, index_name, changes_old, changes_new, comments,
+                                       provisioned_gsi_config, region, key, keyid, profile)
+        if not ret['result']:
+            return ret
     elif len(new_index_names) > 1:
         ret['result'] = False
         ret['comment'] = ('Creation of multiple GSIs ({0}) is not supported due to API '
@@ -529,6 +531,33 @@ def _add_global_secondary_index(ret, name, index_name, changes_old, changes_new,
     else:
         ret['result'] = False
         ret['comment'] = 'Failed to create GSI {0}'.format(index_name)
+
+
+def _delete_global_secondary_index(ret, name, index_name, changes_old, changes_new, comments,
+                                   provisioned_gsi_config, region, key, keyid, profile):
+    '''Updates ret iff there was a failure or in test mode.'''
+    if __opts__['test']:
+        ret['result'] = None
+        ret['comment'] = 'Dynamo table {0} will have a GSI deleted: {1}'.format(
+            name, index_name)
+        return
+    changes_new.setdefault('global_indexes', {})
+    changes_old.setdefault('global_indexes', {})
+    success = __salt__['boto_dynamodb.delete_global_secondary_index'](
+        name,
+        index_name,
+        region=region,
+        key=key,
+        keyid=keyid,
+        profile=profile,
+    )
+
+    if success:
+        comments.append('Deleted GSI {0}'.format(index_name))
+        changes_old['global_indexes'][index_name] = provisioned_gsi_config[index_name]
+    else:
+        ret['result'] = False
+        ret['comment'] = 'Failed to delete GSI {0}'.format(index_name)
 
 
 def _update_global_secondary_indexes(ret, changes_old, changes_new, comments, existing_index_names,

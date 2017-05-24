@@ -236,6 +236,22 @@ def create_global_secondary_index(table_name, global_index, region=None,
     return table.create_global_secondary_index(global_index)
 
 
+def delete_global_secondary_index(table_name, global_index_name, region=None,
+                                  key=None, keyid=None, profile=None):
+    '''
+    Deletes a single global secondary index on a DynamoDB table.
+
+    CLI Example:
+    .. code-block:: bash
+
+        salt myminion boto_dynamodb.delete_global_secondary_index table_name /
+        index_name
+    '''
+    conn = _get_conn(region=region, key=key, keyid=keyid, profile=profile)
+    table = Table(table_name, connection=conn)
+    return table.delete_global_secondary_index(global_index_name)
+
+
 def update_global_secondary_index(table_name, global_indexes, region=None,
                                   key=None, keyid=None, profile=None):
     '''

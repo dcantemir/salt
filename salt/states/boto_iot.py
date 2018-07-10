@@ -58,6 +58,7 @@ config:
             - sql: "SELECT * FROM 'iot/test'"
             - description: 'test rule'
             - ruleDisabled: false
+            - awsIotSqlVersion: "2016-03-23"
             - actions:
               - lambda:
                   functionArn: "arn:aws:us-east-1:1234:function/functionname"
@@ -623,7 +624,7 @@ def policy_detached(name, policyName, principal,
 
 
 def topic_rule_present(name, ruleName, sql, actions, description='',
-            ruleDisabled=False,
+            ruleDisabled=False, awsIotSqlVersion='2016-03-23',
             region=None, key=None, keyid=None, profile=None):
     '''
     Ensure topic rule exists.
@@ -643,8 +644,11 @@ def topic_rule_present(name, ruleName, sql, actions, description='',
     description
         The description of the rule.
 
-    ruleDisable
+    ruleDisabled
         Specifies whether the rule is disabled.
+
+    awsIotSqlVersion
+        The version of the SQL rules engine to use when evaluating the rule.
 
     region
         Region to connect to.
@@ -683,6 +687,7 @@ def topic_rule_present(name, ruleName, sql, actions, description='',
                                                actions=actions,
                                                description=description,
                                                ruleDisabled=ruleDisabled,
+                                               awsIotSqlVersion=awsIotSqlVersion,
                                                region=region, key=key,
                                                keyid=keyid, profile=profile)
         if not r.get('created'):
@@ -713,7 +718,7 @@ def topic_rule_present(name, ruleName, sql, actions, description='',
         ret['changes'].setdefault('new', {})['actions'] = actions
         ret['changes'].setdefault('old', {})['actions'] = _describe['actions']
 
-    for var in ('sql', 'description', 'ruleDisabled'):
+    for var in ('sql', 'description', 'ruleDisabled', 'awsIotSqlVersion'):
         if _describe[var] != locals()[var]:
             need_update = True
             ret['changes'].setdefault('new', {})[var] = locals()[var]
@@ -731,6 +736,7 @@ def topic_rule_present(name, ruleName, sql, actions, description='',
                                                actions=actions,
                                                description=description,
                                                ruleDisabled=ruleDisabled,
+                                               awsIotSqlVersion=awsIotSqlVersion,
                                                region=region, key=key,
                                                keyid=keyid, profile=profile)
         if not r.get('replaced'):

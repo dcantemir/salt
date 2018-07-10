@@ -732,7 +732,7 @@ def topic_rule_exists(ruleName,
 
 
 def create_topic_rule(ruleName, sql, actions, description,
-            ruleDisabled=False,
+            ruleDisabled=False,awsIotSqlVersion='2016-03-23',
             region=None, key=None, keyid=None, profile=None):
     '''
     Given a valid config, create a topic rule.
@@ -757,7 +757,8 @@ def create_topic_rule(ruleName, sql, actions, description,
                                       'sql': sql,
                                       'description': description,
                                       'actions': actions,
-                                      'ruleDisabled': ruleDisabled
+                                      'ruleDisabled': ruleDisabled,
+                                      'awsIotSqlVersion': awsIotSqlVersion
                                })
         return {'created': True}
     except ClientError as e:
@@ -765,7 +766,7 @@ def create_topic_rule(ruleName, sql, actions, description,
 
 
 def replace_topic_rule(ruleName, sql, actions, description,
-            ruleDisabled=False,
+            ruleDisabled=False, awsIotSqlVersion='2016-03-23',
             region=None, key=None, keyid=None, profile=None):
     '''
     Given a valid config, replace a topic rule with the new values.
@@ -790,7 +791,8 @@ def replace_topic_rule(ruleName, sql, actions, description,
                                       'sql': sql,
                                       'description': description,
                                       'actions': actions,
-                                      'ruleDisabled': ruleDisabled
+                                      'ruleDisabled': ruleDisabled,
+                                      'awsIotSqlVersion': awsIotSqlVersion
                                })
         return {'replaced': True}
     except ClientError as e:

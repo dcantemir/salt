@@ -844,7 +844,7 @@ def describe_topic_rule(ruleName,
         if rule and 'rule' in rule:
             rule = rule['rule']
             keys = ('ruleName', 'sql', 'description',
-                    'actions', 'ruleDisabled')
+                    'actions', 'ruleDisabled', 'awsIotSqlVersion')
             return {'rule': dict([(k, rule.get(k)) for k in keys])}
         else:
             return {'rule': None}

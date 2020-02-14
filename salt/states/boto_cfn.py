@@ -144,7 +144,7 @@ def present(name, template_body=None, template_url=None, parameters=None, notifi
     _valid = _validate(template_body, template_url, region, key, keyid, profile)
     log.debug('Validate is : {0}.'.format(_valid))
     if _valid is not True:
-        code, message = _get_error(_valid)
+        code, message = _valid
         ret['result'] = False
         ret['comment'] = 'Template could not be validated.\n{0} \n{1}'.format(code, message)
         return ret
@@ -172,9 +172,14 @@ def present(name, template_body=None, template_url=None, parameters=None, notifi
             if isinstance(updated, str):
                 code, message = _get_error(updated)
                 log.debug('Update error is {0} and message is {1}'.format(code, message))
-                ret['result'] = False
-                ret['comment'] = 'Stack {0} could not be updated.\n{1} \n{2}.'.format(name, code, message)
-                return ret
+                if code != 'ValidationError' or message !='No updates are to be performed.':
+                    ret['result'] = False
+                    ret['comment'] = 'Stack {0} could not be updated.\n{1} \n{2}.'.format(name, code, message)
+                    return ret
+                else:
+                    ret['comment'] = 'Cloud formation template {0} was not updated.'.format(name)
+                    ret['changes'] = None
+                    return ret
             ret['comment'] = 'Cloud formation template {0} has been updated.'.format(name)
             ret['changes']['new'] = updated
             return ret
@@ -259,9 +264,17 @@ def _validate(template_body=None, template_url=None, region=None, key=None, keyi
 
 
 def _get_error(error):
+    log.debug('Error is {0}.'.format(error))
     # Converts boto exception to string that can be used to output error.
     error = '\n'.join(error.split('\n')[1:])
-    error = ET.fromstring(error)
-    code = error[0][1].text
-    message = error[0][2].text
+    if error.find('<Error>') != -1:
+        # XML response
+        error = ET.fromstring(error)
+        code = error[0][1].text
+        message = error[0][2].text
+    else:
+        # JSON response
+        error = json.loads(error)
+        code = error['Error']['Code']
+        message = error['Error']['Message']
     return code, message
